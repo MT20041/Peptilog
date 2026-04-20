@@ -2,6 +2,8 @@
 
 PeptiLog is a production-ready Expo MVP for private peptide record-keeping. It focuses on fast logging, site visibility, personal notes, and per-user Firebase storage across mobile and web.
 
+When Firebase env vars are not present, the web build falls back to a browser-local demo mode so GitHub Pages can host a working sample without backend secrets.
+
 ## Disclaimer
 
 PeptiLog is a personal record-keeping tool for private tracking. It does not provide medical advice, dosing guidance, diagnosis, or treatment recommendations.
@@ -117,7 +119,7 @@ Expo static export outputs the production site to `dist/`.
 
 PeptiLog is configured for GitHub Pages static hosting with Expo Web.
 
-1. Keep the repository name as `PeptiLog`.
+1. Keep the repository path aligned with the current GitHub repo, `Peptilog`.
 2. In GitHub, open `Settings > Pages`.
 3. Set the source to `GitHub Actions`.
 4. Add these repository secrets:
@@ -131,7 +133,9 @@ PeptiLog is configured for GitHub Pages static hosting with Expo Web.
 
 5. Push to `main`. The workflow in `.github/workflows/deploy.yml` exports the Expo web app and deploys the `dist/` output to Pages.
 
-The app config uses Expo static export and `experiments.baseUrl: "/PeptiLog"` so assets and routes resolve correctly from `https://<username>.github.io/PeptiLog/`.
+The app config uses Expo static export and `experiments.baseUrl: "/Peptilog"` so assets and routes resolve correctly from `https://<username>.github.io/Peptilog/`.
+
+If Firebase secrets are not configured in GitHub, the published site still works in demo mode with browser-local sample data.
 
 ## Git commands
 

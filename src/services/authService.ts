@@ -6,7 +6,13 @@ import {
   signOut,
 } from 'firebase/auth';
 
-import { auth, hasConfig } from '@/lib/firebase';
+import { auth, hasConfig, isDemoMode } from '@/lib/firebase';
+
+const demoUser = {
+  uid: 'demo-user',
+  email: 'demo@peptilog.local',
+  isAnonymous: true,
+} as User;
 
 const requireAuth = () => {
   if (!hasConfig || !auth) {
@@ -18,6 +24,11 @@ const requireAuth = () => {
 
 export const authService = {
   subscribe: (callback: (user: User | null) => void) => {
+    if (isDemoMode) {
+      callback(demoUser);
+      return () => undefined;
+    }
+
     if (!hasConfig || !auth) {
       callback(null);
       return () => undefined;
@@ -25,7 +36,9 @@ export const authService = {
 
     return onAuthStateChanged(auth, callback);
   },
-  signIn: (email: string, password: string) => signInWithEmailAndPassword(requireAuth(), email, password),
-  signUp: (email: string, password: string) => createUserWithEmailAndPassword(requireAuth(), email, password),
-  signOut: () => signOut(requireAuth()),
+  signIn: (email: string, password: string) =>
+    isDemoMode ? Promise.resolve() : signInWithEmailAndPassword(requireAuth(), email, password),
+  signUp: (email: string, password: string) =>
+    isDemoMode ? Promise.resolve() : createUserWithEmailAndPassword(requireAuth(), email, password),
+  signOut: () => (isDemoMode ? Promise.resolve() : signOut(requireAuth())),
 };

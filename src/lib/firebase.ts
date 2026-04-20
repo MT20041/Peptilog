@@ -13,10 +13,11 @@ const firebaseConfig = {
 };
 
 const hasConfig = Object.values(firebaseConfig).every(Boolean);
+const isDemoMode = !hasConfig;
 
-if (!hasConfig) {
+if (isDemoMode) {
   console.warn(
-    'Firebase config is incomplete. Add the EXPO_PUBLIC_FIREBASE_* variables before using auth or Firestore.',
+    'Firebase config is incomplete. PeptiLog will run in local demo mode until EXPO_PUBLIC_FIREBASE_* values are provided.',
   );
 }
 
@@ -28,4 +29,4 @@ if (Platform.OS === 'web' && auth) {
   setPersistence(auth, browserLocalPersistence).catch(() => undefined);
 }
 
-export { app, auth, db, hasConfig };
+export { app, auth, db, hasConfig, isDemoMode };

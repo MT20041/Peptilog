@@ -8,7 +8,7 @@ import { FormField } from '@/components/FormField';
 import { ScreenShell } from '@/components/ScreenShell';
 import { DISCLAIMER } from '@/constants/app';
 import { colors, spacing } from '@/constants/theme';
-import { hasConfig } from '@/lib/firebase';
+import { hasConfig, isDemoMode } from '@/lib/firebase';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function SignInScreen() {
@@ -24,6 +24,10 @@ export default function SignInScreen() {
   const [busy, setBusy] = useState(false);
 
   if (user) {
+    return <Redirect href="/(app)" />;
+  }
+
+  if (isDemoMode) {
     return <Redirect href="/(app)" />;
   }
 
@@ -147,4 +151,3 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
-

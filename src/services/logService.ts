@@ -13,7 +13,8 @@ import {
 import { BODY_ZONE_MAP } from '@/models/bodyZones';
 import { LogEntryInput } from '@/models/schemas';
 import { LogEntry, Peptide } from '@/models/types';
-import { db, hasConfig } from '@/lib/firebase';
+import { db, hasConfig, isDemoMode } from '@/lib/firebase';
+import { readDemoState, writeDemoState } from '@/services/demoStorage';
 import { logsPath } from '@/services/firestorePaths';
 import { fromDateTimeLocal, toIsoNow } from '@/utils/date';
 
@@ -45,6 +46,10 @@ const toLogEntry = (id: string, data: Record<string, unknown>): LogEntry => ({
 
 export const logService = {
   async list(userId: string) {
+    if (isDemoMode) {
+      return readDemoState().logs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    }
+
     const firestore = requireDb();
     const reference = collection(firestore, logsPath(userId));
     const snapshot = await getDocs(query(reference, orderBy('timestamp', 'desc')));
@@ -54,6 +59,30 @@ export const logService = {
     const timestamp = input.timestamp.includes('T') ? fromDateTimeLocal(input.timestamp) : input.timestamp;
     const now = toIsoNow();
     const zone = BODY_ZONE_MAP[input.siteId];
+
+    if (isDemoMode) {
+      const state = readDemoState();
+      state.logs.unshift({
+        id: `demo-log-${Date.now()}`,
+        peptideId: input.peptideId,
+        peptideName: peptide.name,
+        dose: input.dose,
+        unit: input.unit,
+        route: input.route as LogEntry['route'],
+        siteId: input.siteId as LogEntry['siteId'],
+        siteLabel: zone?.label ?? input.siteId,
+        timestamp,
+        notes: input.notes?.trim() || undefined,
+        mood: input.mood,
+        energy: input.energy,
+        focus: input.focus,
+        createdAt: now,
+        updatedAt: now,
+      });
+      writeDemoState(state);
+      return;
+    }
+
     const firestore = requireDb();
 
     await addDoc(collection(firestore, logsPath(userId)), {
@@ -78,6 +107,33 @@ export const logService = {
   async update(userId: string, logId: string, input: LogEntryInput, peptide: Peptide) {
     const timestamp = input.timestamp.includes('T') ? fromDateTimeLocal(input.timestamp) : input.timestamp;
     const zone = BODY_ZONE_MAP[input.siteId];
+
+    if (isDemoMode) {
+      const state = readDemoState();
+      state.logs = state.logs.map((item) =>
+        item.id === logId
+          ? {
+              ...item,
+              peptideId: input.peptideId,
+              peptideName: peptide.name,
+              dose: input.dose,
+              unit: input.unit,
+              route: input.route as LogEntry['route'],
+              siteId: input.siteId as LogEntry['siteId'],
+              siteLabel: zone?.label ?? input.siteId,
+              timestamp,
+              notes: input.notes?.trim() || undefined,
+              mood: input.mood,
+              energy: input.energy,
+              focus: input.focus,
+              updatedAt: toIsoNow(),
+            }
+          : item,
+      );
+      writeDemoState(state);
+      return;
+    }
+
     const firestore = requireDb();
 
     await updateDoc(doc(firestore, logsPath(userId), logId), {
@@ -98,6 +154,13 @@ export const logService = {
     });
   },
   async remove(userId: string, logId: string) {
+    if (isDemoMode) {
+      const state = readDemoState();
+      state.logs = state.logs.filter((item) => item.id !== logId);
+      writeDemoState(state);
+      return;
+    }
+
     await deleteDoc(doc(requireDb(), logsPath(userId), logId));
   },
 };

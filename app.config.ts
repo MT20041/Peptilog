@@ -22,7 +22,7 @@ const config: ExpoConfig = {
   },
   experiments: {
     typedRoutes: true,
-    baseUrl: '/PeptiLog',
+    baseUrl: '/Peptilog',
   },
   plugins: ['expo-router'],
   extra: {
