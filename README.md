@@ -107,6 +107,7 @@ npx expo start --web
 ## Build for web
 
 ```bash
+npx expo export:web
 npx expo export --platform web
 ```
 
